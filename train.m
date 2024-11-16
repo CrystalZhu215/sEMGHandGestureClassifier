@@ -75,7 +75,6 @@ end
 
 % Train SVM
 
-accuracies = zeros(25, 1);
 windowSize = 250;
 increment = 250;
 
@@ -83,16 +82,16 @@ subjectId = input("Subject id of dataset: ");
 
 disp("Loading data...");
 
-% Remove conditional if changing subjects
-%if ~exist("X", "var") || ~exist("Y", "var")
 [X, Y] = extractdata(subjectId, true);
-%end
 
 disp("Extracting features...");
 
 featureVectors = extractFeatures(X, windowSize, increment);
 
 svmParams = templateSVM('BoxConstraint', 1, 'KernelFunction', 'polynomial', 'PolynomialOrder', 3, 'KernelScale', 75, 'Standardize', true);
+
+%{
+% For optimizing the kernel scale - ignore otherwise
 
 optimizeParams = hyperparameters('fitcecoc',featureVectors,Y,'svm');
 optimizeParams(1).Optimize = false;
@@ -103,6 +102,7 @@ optimizeParams(5).Optimize = false;
 optimizeParams(6).Optimize = false;
 
 hpoOptions = hyperparameterOptimizationOptions('Repartition', true, 'KFold', 10);
+%}
 
 disp("Training model...");
 
@@ -129,7 +129,6 @@ disp("Testing model...");
 
 featureVectorsTest = extractFeatures(Xt, windowSize, increment);
 
-%Mdl = CVMdl.Trained{1};
 pred = predict(Mdl, featureVectorsTest);
 
 testAccuracy = computeaccuracy(pred, Yt);

@@ -26,15 +26,7 @@ for i = 1:S
 
         window = X{i}((j - 1) * increment + 1: (j - 1) * increment + segmentSize, :);
 
-        mav = mean(abs(window), 1);
-
         wrms = rms(window);
-
-        crossingsArray = window(2:end, :) .* window(1:end-1, :) < 10^(-6);
-        zc = zeros(1, 5);
-        for k = 1:5
-            zc(1, k) = nnz(crossingsArray(:, k)) / (segmentSize - 1);
-        end
 
         diffsArray = window(2:end, :) - window(1:end-1, :);
         scc = zeros(1, 5);
@@ -48,19 +40,14 @@ for i = 1:S
         stdev = std(window);
         kt = mean(((window - wmean) ./ stdev) .^ 4, 1);
 
-        % Vector AR Model
-        %varm(1, arOrder);
         arc = zeros(1, nChannels*arOrder);
         for k = 1:5
-            %estMdl = estimate(arMdl, window(:, k));
             a = arburg(window(:, k), arOrder);
-            % First coefficient is always 1; ignore it
-            a = a(2:end);
+            a = a(2:end); % First coefficient is always 1; ignore it
             iStart = (k-1) * arOrder + 1;
             iEnd = k * arOrder;
             arc(1, iStart:iEnd) = a;
         end
-        %arc = reshape(arc, [1, arOrder * nChannels]);
 
         iStart = (j - 1) * (nFeatures * nChannels + arOrder * nChannels) + 1;
         iEnd = j * (nFeatures * nChannels + arOrder * nChannels);
